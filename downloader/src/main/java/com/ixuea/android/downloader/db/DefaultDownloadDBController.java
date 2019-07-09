@@ -61,7 +61,7 @@ public final class DefaultDownloadDBController implements DownloadDBController {
                         String.valueOf(STATUS_COMPLETED)}, null, null, "createAt desc");
 
         List<DownloadInfo> downloads = new ArrayList<>();
-        Cursor downloadCursor;
+        Cursor downloadCursor=null;
         while (cursor.moveToNext()) {
             DownloadInfo downloadInfo = new DownloadInfo();
             downloads.add(downloadInfo);
