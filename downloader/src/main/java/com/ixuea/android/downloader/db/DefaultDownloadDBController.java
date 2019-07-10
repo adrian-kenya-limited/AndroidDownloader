@@ -56,40 +56,50 @@ public final class DefaultDownloadDBController implements DownloadDBController {
     @SuppressWarnings("No problem")
     @Override
     public List<DownloadInfo> findAllDownloading() {
-        Cursor cursor = readableDatabase.query(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_INFO,
-                DOWNLOAD_INFO_COLUMNS, "status!=?", new String[]{
-                        String.valueOf(STATUS_COMPLETED)}, null, null, "createAt desc");
-
         List<DownloadInfo> downloads = new ArrayList<>();
-        Cursor downloadCursor=null;
-        while (cursor.moveToNext()) {
-            DownloadInfo downloadInfo = new DownloadInfo();
-            downloads.add(downloadInfo);
+        try {
+            Cursor cursor = readableDatabase.query(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_INFO,
+                    DOWNLOAD_INFO_COLUMNS, "status!=?", new String[]{
+                            String.valueOf(STATUS_COMPLETED)}, null, null, "createAt desc");
 
-            inflateDownloadInfo(cursor, downloadInfo);
 
-            //query download thread info
-            downloadCursor = readableDatabase.query(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_THREAD_INFO,
-                    DOWNLOAD_THREAD_INFO_COLUMNS, "downloadInfoId=?", new String[]{
-                            String.valueOf(downloadInfo.getId())}, null, null, null);
-            List<DownloadThreadInfo> downloadThreads = new ArrayList<>();
-            while (downloadCursor.moveToNext()) {
-                DownloadThreadInfo downloadThreadInfo = new DownloadThreadInfo();
-                downloadThreads.add(downloadThreadInfo);
-                inflateDownloadThreadInfo(downloadCursor, downloadThreadInfo);
+            Cursor downloadCursor = null;
+            while (cursor.moveToNext()) {
+                DownloadInfo downloadInfo = new DownloadInfo();
+                downloads.add(downloadInfo);
+
+                inflateDownloadInfo(cursor, downloadInfo);
+
+                //query download thread info
+                downloadCursor = readableDatabase.query(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_THREAD_INFO,
+                        DOWNLOAD_THREAD_INFO_COLUMNS, "downloadInfoId=?", new String[]{
+                                String.valueOf(downloadInfo.getId())}, null, null, null);
+                List<DownloadThreadInfo> downloadThreads = new ArrayList<>();
+                while (downloadCursor.moveToNext()) {
+                    DownloadThreadInfo downloadThreadInfo = new DownloadThreadInfo();
+                    downloadThreads.add(downloadThreadInfo);
+                    inflateDownloadThreadInfo(downloadCursor, downloadThreadInfo);
+                }
+
+                downloadInfo.setDownloadThreadInfos(downloadThreads);
+
             }
 
-            downloadInfo.setDownloadThreadInfos(downloadThreads);
-
-        }
-
-        try {
-            cursor.close();
-        } catch (Exception xx) {
-            xx.printStackTrace();
-        }
-        try {
-            downloadCursor.close();
+            try {
+                cursor.close();
+            } catch (Exception xx) {
+                xx.printStackTrace();
+            }
+            try {
+                downloadCursor.close();
+            } catch (Exception xx) {
+                xx.printStackTrace();
+            }
+            try {
+                readableDatabase.close();
+            } catch (Exception xx) {
+                xx.printStackTrace();
+            }
         } catch (Exception xx) {
             xx.printStackTrace();
         }
@@ -98,18 +108,28 @@ public final class DefaultDownloadDBController implements DownloadDBController {
 
     @Override
     public List<DownloadInfo> findAllDownloaded() {
-        Cursor cursor = readableDatabase.query(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_INFO,
-                DOWNLOAD_INFO_COLUMNS, "status=?", new String[]{
-                        String.valueOf(STATUS_COMPLETED)}, null, null, "createAt desc");
-
         List<DownloadInfo> downloads = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            DownloadInfo downloadInfo = new DownloadInfo();
-            downloads.add(downloadInfo);
-            inflateDownloadInfo(cursor, downloadInfo);
-        }
         try {
-            cursor.close();
+            Cursor cursor = readableDatabase.query(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_INFO,
+                    DOWNLOAD_INFO_COLUMNS, "status=?", new String[]{
+                            String.valueOf(STATUS_COMPLETED)}, null, null, "createAt desc");
+
+
+            while (cursor.moveToNext()) {
+                DownloadInfo downloadInfo = new DownloadInfo();
+                downloads.add(downloadInfo);
+                inflateDownloadInfo(cursor, downloadInfo);
+            }
+            try {
+                cursor.close();
+            } catch (Exception xx) {
+                xx.printStackTrace();
+            }
+            try {
+                readableDatabase.close();
+            } catch (Exception xx) {
+                xx.printStackTrace();
+            }
         } catch (Exception xx) {
             xx.printStackTrace();
         }
@@ -159,6 +179,11 @@ public final class DefaultDownloadDBController implements DownloadDBController {
         } catch (Exception xx) {
             xx.printStackTrace();
         }
+        try {
+            readableDatabase.close();
+        } catch (Exception xx) {
+            xx.printStackTrace();
+        }
         return null;
     }
 
@@ -167,6 +192,11 @@ public final class DefaultDownloadDBController implements DownloadDBController {
         writableDatabase.execSQL(
                 SQL_UPDATE_DOWNLOADING_INFO_STATUS,
                 new Object[]{STATUS_PAUSED, STATUS_COMPLETED});
+        try {
+            writableDatabase.close();
+        } catch (Exception xx) {
+            xx.printStackTrace();
+        }
     }
 
     @Override
@@ -177,6 +207,12 @@ public final class DefaultDownloadDBController implements DownloadDBController {
                         downloadInfo.getId(), downloadInfo.getSupportRanges(),
                         downloadInfo.getCreateAt(), downloadInfo.getUri(), downloadInfo.getPath(),
                         downloadInfo.getSize(), downloadInfo.getProgress(), downloadInfo.getStatus()});
+
+        try {
+            writableDatabase.close();
+        } catch (Exception xx) {
+            xx.printStackTrace();
+        }
     }
 
     @Override
@@ -190,6 +226,12 @@ public final class DefaultDownloadDBController implements DownloadDBController {
                         downloadThreadInfo.getUri(),
                         downloadThreadInfo.getStart(), downloadThreadInfo.getEnd(),
                         downloadThreadInfo.getProgress()});
+
+        try {
+            writableDatabase.close();
+        } catch (Exception xx) {
+            xx.printStackTrace();
+        }
     }
 
     @Override
@@ -199,6 +241,12 @@ public final class DefaultDownloadDBController implements DownloadDBController {
         writableDatabase
                 .delete(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_THREAD_INFO, "downloadInfoId=?",
                         new String[]{String.valueOf(downloadInfo.getId())});
+
+        try {
+            writableDatabase.close();
+        } catch (Exception xx) {
+            xx.printStackTrace();
+        }
     }
 
     @Override
@@ -206,5 +254,11 @@ public final class DefaultDownloadDBController implements DownloadDBController {
         writableDatabase
                 .delete(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_THREAD_INFO, "id=?",
                         new String[]{String.valueOf(downloadThreadInfo.getId())});
+
+        try {
+            writableDatabase.close();
+        } catch (Exception xx) {
+            xx.printStackTrace();
+        }
     }
 }
