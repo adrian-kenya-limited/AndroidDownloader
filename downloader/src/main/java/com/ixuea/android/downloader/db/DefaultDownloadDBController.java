@@ -160,27 +160,33 @@ public final class DefaultDownloadDBController implements DownloadDBController {
 
     @Override
     public DownloadInfo findDownloadedInfoById(String id) {
-        Cursor cursor = readableDatabase
-                .query(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_INFO, DOWNLOAD_INFO_COLUMNS, "_id=?",
-                        new String[]{id},
-                        null, null, "createAt desc");
-        if (cursor.moveToNext()) {
-            DownloadInfo downloadInfo = new DownloadInfo();
-            inflateDownloadInfo(cursor, downloadInfo);
+        DownloadInfo downloadInfo = null;
+        try {
+            Cursor cursor = readableDatabase
+                    .query(DefaultDownloadHelper.TABLE_NAME_DOWNLOAD_INFO, DOWNLOAD_INFO_COLUMNS, "_id=?",
+                            new String[]{id},
+                            null, null, "createAt desc");
+            if (cursor.moveToNext()) {
+                // DownloadInfo downloadInfo = new DownloadInfo();
+                downloadInfo = new DownloadInfo();
+                inflateDownloadInfo(cursor, downloadInfo);
+                try {
+                    cursor.close();
+                } catch (Exception xx) {
+                    xx.printStackTrace();
+                }
+                return downloadInfo;
+            }
             try {
                 cursor.close();
             } catch (Exception xx) {
                 xx.printStackTrace();
             }
-            return downloadInfo;
-        }
-        try {
-            cursor.close();
-        } catch (Exception xx) {
-            xx.printStackTrace();
-        }
-        try {
-            readableDatabase.close();
+            try {
+                readableDatabase.close();
+            } catch (Exception xx) {
+                xx.printStackTrace();
+            }
         } catch (Exception xx) {
             xx.printStackTrace();
         }
