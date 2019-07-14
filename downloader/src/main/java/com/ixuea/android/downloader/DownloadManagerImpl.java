@@ -83,17 +83,17 @@ public final class DownloadManagerImpl implements DownloadManager, DownloadTaskL
     }
 
     private void prepareDownload(DownloadInfo downloadInfo) {
-        if (cacheDownloadTask.size() >= config.getDownloadThread()) {
+        /*if (cacheDownloadTask.size() >= config.getDownloadThread()) {
             downloadInfo.setStatus(DownloadInfo.STATUS_WAIT);
             downloadResponse.onStatusChanged(downloadInfo);
-        } else {
+        } else {*/
             DownloadTaskImpl downloadTask = new DownloadTaskImpl(executorService, downloadResponse,
                     downloadInfo, config, this);
             cacheDownloadTask.put(downloadInfo.getId(), downloadTask);
             downloadInfo.setStatus(DownloadInfo.STATUS_PREPARE_DOWNLOAD);
             downloadResponse.onStatusChanged(downloadInfo);
             downloadTask.start();
-        }
+        /*}*/
     }
 
     @Override
